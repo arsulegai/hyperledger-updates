@@ -24,4 +24,5 @@ type GHClientInterface interface {
 	ListPRs(string, []string, int) ([]configs.PrList, error)
 	ListReleases(string, []string, int) ([]configs.ReleaseList, error)
 	IssueWithLabels(string, []string, []string, int) ([]configs.IssueList, error)
+	ListOrganizations(string) ([]configs.Organization, error)
 }

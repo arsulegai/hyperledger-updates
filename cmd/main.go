@@ -26,7 +26,7 @@ import (
 	"path/filepath"
 	"sort"
 
-	"github.com/google/go-github/v33/github"
+	"github.com/google/go-github/v66/github"
 )
 
 var AppVersion = ""
@@ -44,6 +44,13 @@ func main() {
 	log.Printf("%s version: %s\n", AppName, AppVersion)
 	config := configs.ReadConfiguration()
 	client := client2.NewClient()
+
+	// if the organizations is empty
+	if config.GlobalConfiguration.Organizations == nil {
+		// read organizations from the enterprise
+		organizations := getEnterpriseOrganizations(config, client)
+		config.GlobalConfiguration.Organizations = organizations
+	}
 	log.Println("Listing repositories for each organization")
 
 	expectedPrList, orgReleasesList, issueList, errorOccurred :=
@@ -491,7 +498,7 @@ func recentPRs(prs []configs.ExternalPRDetails) []github.PullRequest {
 
 	// sort the PRs by top, descending order of time of creation
 	sort.Slice(allPRs, func(first, second int) bool {
-		return allPRs[first].CreatedAt.After(*allPRs[second].CreatedAt)
+		return allPRs[first].CreatedAt.Time.After(*allPRs[second].CreatedAt.GetTime())
 	})
 
 	// return the top n items
@@ -508,7 +515,7 @@ func recentIssues(issues []configs.ExternalIssueDetails) []github.Issue {
 
 	// sort the PRs by top, descending order of time of creation
 	sort.Slice(allIssues, func(first, second int) bool {
-		return allIssues[first].CreatedAt.After(*allIssues[second].CreatedAt)
+		return allIssues[first].CreatedAt.Time.After(*allIssues[second].CreatedAt.GetTime())
 	})
 
 	// return the top n items
@@ -531,4 +538,13 @@ func recentReleases(releases []configs.ExternalReleaseDetails) []github.Reposito
 	// return the top n items
 	// n is 5 for now
 	return allReleases[:5]
+}
+
+func getEnterpriseOrganizations(config configs.Configuration, ghClient client2.GHClientInterface) []configs.Organization {
+	organizations, err := ghClient.ListOrganizations(config.GlobalConfiguration.Enterprise)
+	if err != nil {
+		log.Fatalf("unable to fetch organizations from enterprise as well %+v", err)
+	}
+	log.Printf("organizations is %v", organizations)
+	return organizations
 }

@@ -13,13 +13,14 @@
 # limitations under the License.
 
 global:
-  organizations:
-    - organization:
-        name: "Hyperledger"
-        github: "hyperledger"
-    - organization:
-        name: "Hyperledger Labs"
-        github: "hyperledger-labs"
+  enterprise: lf-decentralized-trust
+#  organizations:
+#    - organization:
+#        name: "Hyperledger"
+#        github: "hyperledger"
+#    - organization:
+#        name: "Hyperledger Labs"
+#        github: "hyperledger-labs"
   scrape-duration-days: 7
   scrape-repo-class: public
   external-template:

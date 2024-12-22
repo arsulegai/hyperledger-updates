@@ -49,6 +49,11 @@ next to them here
 global:
   # Organizations from where the PRs, Issues and Releases are to be listed. Each organization
   # has to be listed as a list element.
+  # Enterprise is a new way to input organizations. All of the
+  # organizations under the enterprise will be picked up for scraping.
+  # note that enterprise gets ignored if there is organization list
+  # explicitly specified.
+  enterprise: "lf-decentralized-trust"
   organizations:
     - organization:
         name: "Hyperledger"
@@ -57,6 +62,8 @@ global:
         name: "Hyperledger Labs"
         github: "hyperledger-labs"
   scrape-duration-days: 7
+  # avoid scraping hidden repositories
+  scrape-repo-class: public
   # Set this to true and specify input/output files
   external-template:
     enabled: false

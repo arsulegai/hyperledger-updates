@@ -63,6 +63,7 @@ type ElementExternalTemplate struct {
 }
 
 type GlobalConfiguration struct {
+	Enterprise       string           `yaml:"enterprise"`
 	Organizations    []Organization   `yaml:"organizations"`
 	DaysCount        int              `yaml:"scrape-duration-days"`
 	ExternalTemplate ExternalTemplate `yaml:"external-template"`

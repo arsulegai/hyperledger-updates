@@ -17,7 +17,7 @@
 package configs
 
 import (
-	"github.com/google/go-github/v33/github"
+	"github.com/google/go-github/v66/github"
 )
 
 type RepositoryStructure struct {

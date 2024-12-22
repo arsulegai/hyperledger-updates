@@ -19,13 +19,14 @@ package client
 import (
 	ctx "context"
 	"errors"
+	"fmt"
 	"github-updates/internal/pkg/configs"
 	"github-updates/internal/pkg/utils"
 	"log"
 	"net/http"
 	"time"
 
-	"github.com/google/go-github/v33/github"
+	"github.com/google/go-github/v66/github"
 	"golang.org/x/oauth2"
 )
 
@@ -287,7 +288,8 @@ func (c Client) IssueWithLabels(org string, repos []string, issueLabels []string
 	return issueList, nil
 }
 
-/**
+/*
+*
 Utility function to check if the issue contains at least one of the desired labels
 */
 func doesIssueContainLabels(issue *github.Issue, allowedLabels []string) bool {
@@ -303,4 +305,63 @@ func doesIssueContainLabels(issue *github.Issue, allowedLabels []string) bool {
 		}
 	}
 	return false
+}
+
+func (c Client) ListOrganizations(enterprise string) ([]configs.Organization, error) {
+	var organizations []configs.Organization
+
+	// Build the API URL for the enterprise's organizations endpoint
+	apiURL := fmt.Sprintf("enterprises/%s/organizations", enterprise)
+
+	// Pagination options
+	page := 1
+	perPage := 10
+
+	for {
+		// Construct the API request URL with pagination
+		pagedURL := fmt.Sprintf("%s?page=%d&per_page=%d", apiURL, page, perPage)
+
+		// Make the request
+		req, err := c.Client.NewRequest("GET", pagedURL, nil)
+		if err != nil {
+			return nil, fmt.Errorf("error creating request: %v", err)
+		}
+
+		// Decode the JSON response
+		var orgs []struct {
+			Login string `json:"login"`
+			Name  string `json:"name"`
+		}
+
+		// Execute the request
+		resp, err := c.Client.Do(c.Context, req, &orgs)
+		if err != nil {
+			return nil, fmt.Errorf("error making request: %v", err)
+		}
+
+		// Check if no more organizations are returned
+		if resp.StatusCode == http.StatusNoContent || resp.StatusCode == http.StatusNotFound {
+			break
+		}
+
+		// Append organizations to the result slice
+		for _, org := range orgs {
+			organizations = append(organizations, configs.Organization{
+				Organization: configs.OrganizationStructure{
+					Name:   org.Name,
+					Github: org.Login,
+				},
+			})
+		}
+
+		// If the number of returned organizations is less than the per_page value, stop fetching
+		if len(orgs) < perPage {
+			break
+		}
+
+		// Move to the next page
+		page++
+	}
+
+	return organizations, nil
 }
